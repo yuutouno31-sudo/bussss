@@ -210,6 +210,12 @@
     font-size: 0.65rem;
     font-weight: 400;
     letter-spacing: 0.1em;
+    order: -1;
+  }
+  .countdown {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
   }
 
   .via-tag {
@@ -651,7 +657,7 @@ function render() {
   if (nextBusArea.dataset.key === dirKey) {
     if (upcoming.length > 0) {
       const cdEl = nextBusArea.querySelector('.countdown');
-      if (cdEl) cdEl.childNodes[0].textContent = formatCountdown(upcoming[0].h*60+upcoming[0].m - nowMin);
+      if (cdEl) cdEl.childNodes[1].textContent = formatCountdown(upcoming[0].h*60+upcoming[0].m - nowMin);
     }
     return;
   }
@@ -671,7 +677,7 @@ function render() {
       <div class="card-label">次のバス（${srcName}発）</div>
       <div class="card-row">
         <div class="bus-time">${pad(next.h)}:${pad(next.m)}</div>
-        <div class="countdown">${formatCountdown(diffNext)}<span>出発まで</span></div>
+        <div class="countdown"><span>出発まで</span>${formatCountdown(diffNext)}</div>
       </div>
       <div class="via-tag"><span class="via-dot"></span><strong>${next.via}</strong>→ ${destName}${next.direct?' (直行)':''}</div>
     `;
@@ -704,11 +710,8 @@ function render() {
   }
 }
 
-// =====================================================
-// Full timetable toggle
-// =====================================================
 let fullOpen = false;
-let ttDayType = null; // currently displayed day type in full timetable
+let ttDayType = null;
 
 function toggleFull() {
   fullOpen = !fullOpen;
@@ -749,7 +752,6 @@ function renderFullTimetable() {
   const buses = data[ttDayType];
   const upcoming = buses.filter(x => x.h*60+x.m >= nowMin);
 
-  // Group by hour
   const byHour = {};
   buses.forEach(b => {
     if (!byHour[b.h]) byHour[b.h] = [];
