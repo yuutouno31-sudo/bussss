@@ -53,6 +53,7 @@
     line-height: 1.2;
   }
 
+  /* Direction Toggle */
   .direction-toggle {
     width: 100%;
     max-width: 480px;
@@ -103,6 +104,7 @@
     letter-spacing: 0.05em;
   }
 
+  /* Clock */
   .clock-block {
     background: var(--ink);
     color: var(--paper);
@@ -152,6 +154,7 @@
     vertical-align: middle;
   }
 
+  /* Next bus card */
   .next-card {
     background: var(--card-bg);
     border: 2px solid var(--ink);
@@ -220,6 +223,7 @@
   .via-tag strong { color: var(--ink); font-weight: 700; }
   .via-dot { width: 5px; height: 5px; background: var(--accent2); border-radius: 50%; display: inline-block; }
 
+  /* Following buses */
   .following-title {
     font-size: 0.65rem;
     letter-spacing: 0.15em;
@@ -283,6 +287,124 @@
     vertical-align: middle;
   }
 
+  /* Full timetable toggle */
+  .toggle-btn {
+    width: 100%;
+    max-width: 480px;
+    background: var(--card-bg);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    margin-bottom: 0.8rem;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .toggle-btn:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .toggle-btn .chevron {
+    display: inline-block;
+    transition: transform 0.25s ease;
+    font-size: 0.9rem;
+  }
+  .toggle-btn.open .chevron { transform: rotate(180deg); }
+
+  .full-timetable {
+    width: 100%;
+    max-width: 480px;
+    display: none;
+    flex-direction: column;
+    gap: 0;
+    margin-bottom: 1.5rem;
+    background: var(--card-bg);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .full-timetable.open { display: flex; }
+
+  .tt-hour-row {
+    display: flex;
+    align-items: stretch;
+    border-bottom: 1px solid var(--border);
+  }
+  .tt-hour-row:last-child { border-bottom: none; }
+  .tt-hour {
+    width: 2.8rem;
+    min-width: 2.8rem;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0.04em;
+  }
+  .tt-buses {
+    flex: 1;
+    padding: 0.45rem 0.6rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem 0.5rem;
+    align-items: center;
+  }
+  .tt-bus {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  .tt-bus .tt-via {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.55rem;
+    color: var(--muted);
+    margin-left: 1px;
+    vertical-align: super;
+  }
+  .tt-bus.past { color: var(--border); }
+  .tt-bus.next-up { color: var(--accent); font-weight: 700; }
+
+  /* Day-type tabs */
+  .tt-tabs {
+    width: 100%;
+    max-width: 480px;
+    display: none;
+    gap: 4px;
+    margin-bottom: 0.5rem;
+  }
+  .tt-tabs.open { display: flex; }
+  .tt-tab {
+    flex: 1;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    padding: 0.45rem 0.3rem;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    background: var(--card-bg);
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .tt-tab.active {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+
+  /* Slide animation */
   @keyframes slideIn {
     from { opacity: 0; transform: translateY(8px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -297,6 +419,7 @@
   <h1>石山団地 ↔ 石山駅</h1>
 </header>
 
+<!-- Direction Toggle -->
 <div class="direction-toggle">
   <button class="dir-btn active" id="btnToEki" onclick="setDir('toEki')">
     <span class="arrow">→</span>
@@ -310,6 +433,7 @@
   </button>
 </div>
 
+<!-- Clock -->
 <div class="clock-block">
   <div class="clock-time" id="clock">--:--:--</div>
   <div class="clock-date" id="dateLabel">---</div>
@@ -318,9 +442,22 @@
 <div id="nextBusArea" style="width:100%;max-width:480px;display:flex;flex-direction:column;align-items:center;"></div>
 <p class="following-title"><span class="live-dot"></span>その後のバス</p>
 <div class="following-list" id="followingList"></div>
+<button class="toggle-btn" id="toggleBtn" onclick="toggleFull()">
+  <span class="chevron">▼</span>
+  <span id="toggleLabel">本日の時刻表をすべて表示</span>
+</button>
+<div class="tt-tabs" id="ttTabs">
+  <button class="tt-tab" id="tab-weekday" onclick="setTtDay('weekday')">平日</button>
+  <button class="tt-tab" id="tab-saturday" onclick="setTtDay('saturday')">土曜</button>
+  <button class="tt-tab" id="tab-holiday" onclick="setTtDay('holiday')">休日</button>
+</div>
+<div class="full-timetable" id="fullTimetable"></div>
 <footer id="footerNote"></footer>
 
 <script>
+// =====================================================
+// 石山団地(1番) → 石山駅 時刻表
+// =====================================================
 const toEki = {
   weekday: [
     {h:6,m:18,via:'石山寺経由'},{h:6,m:30,via:'東レ正門前経由',direct:true},
@@ -381,6 +518,11 @@ const toEki = {
   ]
 };
 
+// =====================================================
+// 石山駅 → 石山団地(1番) 時刻表
+// 出典: 松原(1番)停留所【1】【33】石山団地行き時刻の2分前
+// https://www.kojak.co.jp/timetable/Zikoku/00951_01/
+// =====================================================
 function m2(h, m) {
   let t = h * 60 + m - 2;
   if (t < 0) t += 1440;
@@ -399,16 +541,17 @@ const toDanchi = {
     b(12,2,'国分団地経由'), b(12,5,'石山寺経由'), b(12,45,'石山寺経由'),
     b(13,2,'国分団地経由'), b(13,25,'石山寺経由'),
     b(14,2,'国分団地経由'), b(14,5,'石山寺経由'), b(14,45,'石山寺経由'),
-    b(15,25,'石山寺経由'),
+    b(15,2,'国分団地経由'), b(15,25,'石山寺経由'),
     b(16,2,'国分団地経由'), b(16,5,'石山寺経由'), b(16,45,'石山寺経由'), b(16,52,'国分団地経由'),
     b(17,17,'石山寺経由'), b(17,30,'国分団地経由'), b(17,47,'石山寺経由'),
     b(18,3,'国分団地経由'), b(18,17,'石山寺経由'), b(18,35,'国分団地経由'), b(18,47,'石山寺経由'),
     b(19,8,'国分団地経由'), b(19,16,'石山寺経由'), b(19,38,'国分団地経由'), b(19,51,'石山寺経由'),
-    b(20,31,'石山寺経由'),
+    b(20,8,'国分団地経由'), b(20,31,'石山寺経由'), b(20,38,'国分団地経由'),
+    b(21,5,'国分団地経由'), b(21,11,'石山寺経由'), b(21,38,'国分団地経由'), b(21,51,'石山寺経由'),
+    b(22,19,'石山寺経由'), b(22,43,'石山寺経由'),
   ],
   saturday: [
     b(6,55,'石山寺経由'),
-    b(8,45,'石山寺経由'),
     b(9,2,'国分団地経由'), b(9,25,'石山寺経由'),
     b(10,2,'国分団地経由'), b(10,5,'石山寺経由'), b(10,45,'石山寺経由'),
     b(11,2,'国分団地経由'), b(11,25,'石山寺経由'),
@@ -420,10 +563,12 @@ const toDanchi = {
     b(17,18,'石山寺経由'), b(17,32,'国分団地経由'), b(17,45,'石山寺経由'),
     b(18,3,'国分団地経由'), b(18,15,'石山寺経由'), b(18,35,'国分団地経由'), b(18,45,'石山寺経由'),
     b(19,8,'石山寺経由'), b(19,22,'国分団地経由'), b(19,33,'石山寺経由'),
+    b(20,5,'石山寺経由'), b(20,19,'国分団地経由'), b(20,45,'石山寺経由'),
+    b(21,2,'国分団地経由'), b(21,23,'石山寺経由'),
+    b(22,19,'石山寺経由'),
   ],
   holiday: [
     b(6,55,'石山寺経由'),
-    b(8,45,'石山寺経由'),
     b(9,2,'国分団地経由'), b(9,25,'石山寺経由'),
     b(10,2,'国分団地経由'), b(10,5,'石山寺経由'), b(10,45,'石山寺経由'),
     b(11,2,'国分団地経由'), b(11,25,'石山寺経由'),
@@ -435,10 +580,13 @@ const toDanchi = {
     b(17,2,'国分団地経由'), b(17,25,'石山寺経由'),
     b(18,2,'国分団地経由'), b(18,5,'石山寺経由'), b(18,45,'石山寺経由'),
     b(19,2,'国分団地経由'), b(19,25,'石山寺経由'), b(19,32,'国分団地経由'),
-    b(20,5,'石山寺経由'), b(20,45,'石山寺経由'),
+    b(20,5,'石山寺経由'), b(20,19,'国分団地経由'), b(20,45,'石山寺経由'),
+    b(21,2,'国分団地経由'), b(21,23,'石山寺経由'),
+    b(22,19,'石山寺経由'),
   ]
 };
 
+// Sort
 [toEki, toDanchi].forEach(tt => {
   Object.keys(tt).forEach(k => tt[k].sort((a,b) => (a.h*60+a.m)-(b.h*60+b.m)));
 });
@@ -499,6 +647,7 @@ function render() {
   const upcomingKey = upcoming.length === 0 ? 'none' : upcoming.slice(0,5).map(b=>b.h*60+b.m+b.via).join(',');
   const dirKey = currentDir + upcomingKey;
 
+  // Update countdown text every second without full re-render
   if (nextBusArea.dataset.key === dirKey) {
     if (upcoming.length > 0) {
       const cdEl = nextBusArea.querySelector('.countdown');
@@ -544,16 +693,98 @@ function render() {
     footerNote.innerHTML = `
       ※「直」＝東レ正門前・国分団地経由 石山駅ゆき直行<br>
       ※8月13日・12月29日（休日除く）は土曜ダイヤ。お盆(8/14〜16)・年末年始(12/30〜1/4)は休日ダイヤ<br><br>
+      出典: <a href="https://www.kojak.co.jp/timetable/Zikoku/01058_01/" target="_blank">江若交通公式時刻表（石山団地1番）</a>
     `;
   } else {
     footerNote.innerHTML = `
+      ※時刻は松原バス停（石山団地方面）の公式時刻から2分前を石山駅発として表示<br>
       ※8月13日・12月29日（休日除く）は土曜ダイヤ。お盆(8/14〜16)・年末年始(12/30〜1/4)は休日ダイヤ<br><br>
+      出典: <a href="https://www.kojak.co.jp/timetable/Zikoku/00951_01/" target="_blank">江若交通 松原(1番)時刻表</a>
     `;
   }
 }
 
+// =====================================================
+// Full timetable toggle
+// =====================================================
+let fullOpen = false;
+let ttDayType = null; // currently displayed day type in full timetable
+
+function toggleFull() {
+  fullOpen = !fullOpen;
+  const btn = document.getElementById('toggleBtn');
+  const box = document.getElementById('fullTimetable');
+  const tabs = document.getElementById('ttTabs');
+  const lbl = document.getElementById('toggleLabel');
+  btn.classList.toggle('open', fullOpen);
+  box.classList.toggle('open', fullOpen);
+  tabs.classList.toggle('open', fullOpen);
+  lbl.textContent = fullOpen ? '時刻表を閉じる' : '本日の時刻表をすべて表示';
+  if (fullOpen) {
+    // default to today's day type
+    ttDayType = getDayType(new Date());
+    updateTtTabs();
+    renderFullTimetable();
+  }
+}
+
+function setTtDay(type) {
+  ttDayType = type;
+  updateTtTabs();
+  renderFullTimetable();
+}
+
+function updateTtTabs() {
+  ['weekday','saturday','holiday'].forEach(t => {
+    document.getElementById('tab-' + t).classList.toggle('active', t === ttDayType);
+  });
+}
+
+function renderFullTimetable() {
+  const now = new Date();
+  const todayType = getDayType(now);
+  const nowMin = (ttDayType === todayType) ? now.getHours() * 60 + now.getMinutes() : -1;
+
+  const data = currentDir === 'toEki' ? toEki : toDanchi;
+  const buses = data[ttDayType];
+  const upcoming = buses.filter(x => x.h*60+x.m >= nowMin);
+
+  // Group by hour
+  const byHour = {};
+  buses.forEach(b => {
+    if (!byHour[b.h]) byHour[b.h] = [];
+    byHour[b.h].push(b);
+  });
+
+  const box = document.getElementById('fullTimetable');
+  box.innerHTML = '';
+  Object.keys(byHour).sort((a,b) => +a - +b).forEach(h => {
+    const row = document.createElement('div');
+    row.className = 'tt-hour-row';
+    const busesCell = document.createElement('div');
+    busesCell.className = 'tt-buses';
+    row.innerHTML = `<div class="tt-hour">${pad(+h)}</div>`;
+    row.appendChild(busesCell);
+    box.appendChild(row);
+
+    byHour[h].forEach(bus => {
+      const bMin = bus.h * 60 + bus.m;
+      const span = document.createElement('span');
+      const isNext = upcoming.length > 0 && upcoming[0].h === bus.h && upcoming[0].m === bus.m && upcoming[0].via === bus.via;
+      span.className = 'tt-bus' + (isNext ? ' next-up' : bMin < nowMin ? ' past' : '');
+      const viaShort = bus.via === '石山寺経由' ? '寺' : '国';
+      span.innerHTML = `${pad(bus.m)}<span class="tt-via">${viaShort}</span>`;
+      span.title = `${pad(bus.h)}:${pad(bus.m)} ${bus.via}`;
+      busesCell.appendChild(span);
+    });
+  });
+}
+
 render();
-setInterval(render, 1000);
+setInterval(() => {
+  render();
+  if (fullOpen) renderFullTimetable();
+}, 1000);
 </script>
 </body>
 </html>
